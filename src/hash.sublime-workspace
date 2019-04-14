@@ -1,0 +1,550 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"hta",
+				"htable"
+			],
+			[
+				"b",
+				"byte"
+			],
+			[
+				"H",
+				"HAGAIN"
+			],
+			[
+				"n",
+				"noprefix"
+			],
+			[
+				"hno",
+				"hnodemax"
+			],
+			[
+				"str",
+				"string.h\tstandard header"
+			],
+			[
+				"hn",
+				"hnodearray"
+			],
+			[
+				"h",
+				"hnodearray"
+			],
+			[
+				"hnode",
+				"hnodearray"
+			],
+			[
+				"Hashtable",
+				"Hashtable"
+			],
+			[
+				"hash",
+				"hashtable"
+			],
+			[
+				"k",
+				"key_tt"
+			],
+			[
+				"OB",
+				"OBJECTSASM"
+			],
+			[
+				"SOU",
+				"SOURCESASM"
+			],
+			[
+				"O",
+				"OBJECTSASM"
+			],
+			[
+				"SO",
+				"SOURCESASM"
+			],
+			[
+				"S",
+				"SOURCES"
+			],
+			[
+				"hnod",
+				"hnodetmp"
+			],
+			[
+				"std",
+				"stdlib.h\tstandard header"
+			],
+			[
+				"size",
+				"size_t"
+			],
+			[
+				"val",
+				"value"
+			],
+			[
+				"s",
+				"size"
+			],
+			[
+				"has",
+				"hashtable"
+			],
+			[
+				"hah",
+				"hashtable"
+			],
+			[
+				"key",
+				"key_t"
+			],
+			[
+				"inc",
+				"include"
+			],
+			[
+				"stdi",
+				"stdio.h\tstandard header"
+			],
+			[
+				"in",
+				"index"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"contents": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <assert.h>\n#include <string.h>\n#include \"hash.h\"\n/*\nuint64_t hash(key_tt buf)\n{\n\t\n\t//assert(buf);\n\tuint64_t hash = 0;\n\tfor (int i = 0; buf[i]; i++)\n\t\thash = hash * 33 + buf[i];\n\treturn hash;\n\t \n\tasm(\".intel_syntax noprefix\\n\\t\"\n\t\t\"mov rdi, %0\\n\\t\"\n\t\t\"xor rcx, rcx\\n\\t\"\n\t\t\"mov cl, byte [rdi]\\n\\t\"\n\t\t\"test cl, cl\\n\\t\"\n\t\t\"je HEXIT\\n\\t\"\n\t\t\"add rdi, 1\\n\\t\"\n\t\t\"xor rax, rax\\n\\t\"\n\t\t\"HAGAIN:\\n\\t\"\n\t\t\"mov rbx, rax\\n\\t\"\n\t\t\"add rdi, 1\\n\\t\"\n\t\t\"shl rbx, 5\\n\\t\"\n\t\t\"add rax, rbx\\n\\t\"\n\t\t\"add rax, rcx\\n\\t\"\n\t\t\"mov cl, byte [rdi - 1]\\n\\t\"\n\t\t\"test cl, cl\\n\\t\"\n\t\t\"jne HAGAIN\\n\\t\"\n\t\t\"jmp HEXIT2\\n\\t\"\n\t\t\"HEXIT:\\n\\t\"\n\t\t\"xor rax, rax\\n\\t\"\n\t\t\"HEXIT2:\\n\\t\"\n\t\t\".att_syntax noprefix\\n\\t\"\n\t\t: \"=r\"(buf)\n\t\t:\n\t\t: \"rdi\", \"rcx\", \"rbx\"\n\t);\n\t\n}\n*/\n/*\n//jenkins one at a time hash\nuint64_t hash(key_tt buf)\n{\n\t\n\tuint64_t hash = 0;\n    for(int i = 0; buf[i]; i++)\n    {\n        hash += buf[i];\n        hash += (hash << 10);\n        hash ^= (hash >> 6);\n    }\n    hash += (hash << 3);\n    hash ^= (hash >> 11);\n    hash += (hash << 15);\n    return hash;\n    \n\tasm(\".intel_syntax noprefix\\n\\t\"\n\t\t\"mov rdi, %0\\n\\t\"\n\t\t\"xor rax, rax\\n\\t\"\n\t\t\"xor rcx, rcx\\n\\t\"\n\t\t\"mov al, byte [rdi]\\n\\t\"\n\t\t\"test al, al\\n\\t\"\n\t\t\"je HEXIT\\n\"\n\t\t\"HAGAIN:\\n\\t\"\n\t\t\"inc rdi\\n\\t\"\n\t\t\"add rax, rcx\\n\\t\"\n\t\t\"mov rcx, rax\\n\\t\"\n\t\t\"shl rcx, 10\\n\\t\"\n\t\t\"add rax, rcx\\n\\t\"\n\t\t\"mov rcx, rax\\n\\t\"\n\t\t\"shr rcx, 6\\n\\t\"\n\t\t\"xor rcx, rax\\n\\t\"\n\t\t\"xor rax, rax\\n\\t\"\n\t\t\"mov al, byte [rdi - 1]\\n\\t\"\n\t\t\"test al, al\\n\\t\"\n\t\t\"jne HAGAIN\\n\"\n\t\t\"HEXIT:\\n\\t\"\n\t\t\"lea rcx, [rcx + rcx * 8]\\n\\t\"\n\t\t\"add rax, rcx\\n\\t\"\n\t\t\"shr rax, 11\\n\\t\"\n\t\t\"xor rax, rcx\\n\\t\"\n\t\t\"mov rcx, rax\\n\\t\"\n\t\t\"shl rcx, 15\\n\\t\"\n\t\t\"add rax, rcx\\n\\t\"\n\t\t\".att_syntax noprefix\\n\\t\"\n\t\t: \"=r\"(buf)\n\t\t:\n\t\t: \"rdi\", \"rcx\"\n\t);\n\t\t\n} */\n\n//CRC8\nuint64_t hash(key_tt buf)\n{\n\t/*\n\tuint64_t hash = 0xFF;\n\tfor (int i = 0; buf[i]; i++) {\n\t\thash ^= buf[i];\n\t\tfor (int j = 0; j < 8; j++)\n\t\t\thash = hash & 0x80 ? (hash << 1) ^ 0x31 : hash << 1;\n\t}\n\treturn hash;\n\t*/\n\tasm(\".intel_syntax noprefix\\n\\t\"\n\t\t\"mov rdi, %0\\n\\t\"\n\t\t\"mov rax, 0xFF\\n\\t\"\n\t\t\"xor rcx, rcx\\n\\t\"\n\t\t\"HAGAIN:\\n\\t\"\n\t\t\"mov bl, byte [rdi]\\n\\t\"\n\t\t\"test bl, bl\\n\\t\"\n\t\t\"je HEXIT\\n\\t\"\n\t\t\"mov rcx, 8\\n\\t\"\n\t\t\"inc rdi\\n\\t\"\n\t\t\"xor rax, rbx\\n\\t\"\n\t\t\"HLOOP:\\n\\t\"\n\t\t\"shl rax, 1\\n\\t\"\n\t\t\"test rax, 0x80\\n\\t\"\n\t\t\"jne CRC\\n\\t\"\n\t\t\"xor rax, 0x31\\n\\t\"\n\t\t\"CRC:\\n\\t\"\n\t\t\"loop HLOOP\\n\\t\"\n\t\t\"jmp HAGAIN\\n\\t\"\n\t\t\"HEXIT:\\n\\t\"\n\t\t\".att_syntax noprefix\\n\\t\"\n\t\t: \"=r\"(buf)\n\t\t:\n\t\t: \"rdi\", \"rcx\", \"rbx\"\n\t);\n}\n\nuint8_t hashkeycheck(key_tt key1, key_tt key2)\n{\n\treturn strcmp(key1, key2);\n}\nstruct Hashtable* htable_ctor(size_t size)\n{\n\tstruct Hashtable* htable = calloc(1, sizeof(struct Hashtable));\n\thtable->size = size;\n\thtable->hnodearray = calloc(size, sizeof(struct Hashnode*));\n\treturn htable;\n}\nvoid htable_dtor(struct Hashtable* htable)\n{\n\tassert(htable);\n\tfor (int i = 0; i < htable->size; i++) {\n\t\twhile(htable->hnodearray[i]) {\n\t\t\tstruct Hashnode* hnodetmp = htable->hnodearray[i];\n\t\t\thtable->hnodearray[i] = htable->hnodearray[i]->next;\n\t\t\tfree(hnodetmp);\n\t\t}\t\n\t}\n\tfree(htable->hnodearray);\n\thtable->size = 0;\n\tfree(htable);\n}\nvoid htable_dump(struct Hashtable* htable) \n{\n\tprintf(\"Hashtable dump:\\n\");\n\tstruct Hashnode *hnodetmp = NULL;\n\tfor (int i = 0; i < htable->size; i++) {\n\t\thnodetmp = htable->hnodearray[i];\n\t\tsize_t length = 0;\n\t\twhile(hnodetmp) {\n\t\t\tlength++;\n\t\t\t//printf(\"[%s]: %u\\n\", hnodetmp->key, hnodetmp->value);\n\t\t\thnodetmp = hnodetmp->next;\n\t\t}\n\t\tprintf(\"%d %lu\\n\", i, length);\n\t}\n}\nstruct Hashnode* hnode_create(key_tt key, value_t value, struct Hashnode* next) \n{\n\tstruct Hashnode* hashptr = calloc(1, sizeof(struct Hashnode));\n\thashptr->key = key;\n\thashptr->value = value;\n\thashptr->next = next;\n\treturn hashptr;\n}\nstruct Hashnode* hnode_search(struct Hashtable* htable, key_tt key)\n{\n\tassert(htable);\n\tstruct Hashnode* hnode = htable->hnodearray[hash(key) % htable->size];\n\twhile (hnode) {\n\t\tif (!hashkeycheck(hnode->key, key))\n\t\t\treturn hnode;\n\t\thnode = hnode->next;\n\t}\n\treturn NULL;\n}\nvoid hnode_insert(struct Hashtable* htable, key_tt key, value_t value)\n{\n\tassert(htable);\n\tstruct Hashnode* hnode = hnode_search(htable, key);\n\tif (hnode) {\n\t\thnode->value++;\n\t} else {\n\t\tsize_t index = hash(key) % htable->size;\n\t\thnode = hnode_create(key, value, htable->hnodearray[index]);\n\t\tassert(hnode);\n\t\thtable->hnodearray[index] = hnode;\n\t}\n}\nvoid hnode_delete(struct Hashtable* htable, key_tt key)\n{\n\tsize_t index = hash(key) % htable->size;\n\tstruct Hashnode* hnode = htable->hnodearray[index];\n\tif(!hnode)\n\t\treturn;\n\tif (!hashkeycheck(hnode->key, key)) {\n\t\thtable->hnodearray[index] = hnode->next;\n\t\tfree(hnode);\n\t\treturn;\n\t}\n\twhile (hnode->next) {\n\t\tif (!hashkeycheck(hnode->next->key, key)) {\n\t\t\tstruct Hashnode* hnodetmp = hnode->next;\n\t\t\thnode->next = hnode->next->next;\n\t\t\tfree(hnodetmp);\n\t\t\treturn;\n\t\t}\n\t\thnode = hnode->next;\n\t}\n}\nstruct Hashnode* hnode_maxvalue(struct Hashtable* htable)\n{\n\tassert(htable);\n\tstruct Hashnode* hnodemax = NULL;\n\tfor (size_t i = 0; i < htable->size; i++) {\n\t\tstruct Hashnode* hnode = htable->hnodearray[i];\n\t\tif (!hnodemax)\n\t\t\thnodemax = hnode;\n\t\twhile (hnode) {\n\t\t\tif (hnode->value > hnodemax->value)\n\t\t\t\thnodemax = hnode;\n\t\t\thnode = hnode->next;\n\t\t}\n\t}\n\treturn hnodemax;\n}",
+			"file": "hash.c",
+			"file_size": 5184,
+			"file_write_time": 131991993332679193,
+			"settings":
+			{
+				"buffer_size": 5182,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "hash.h",
+			"settings":
+			{
+				"buffer_size": 801,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "main.c",
+			"settings":
+			{
+				"buffer_size": 996,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "textproc.c",
+			"settings":
+			{
+				"buffer_size": 756,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "textproc.h",
+			"settings":
+			{
+				"buffer_size": 131,
+				"line_ending": "Unix"
+			}
+		}
+	],
+	"build_system": "Packages/Makefile/Make.sublime-build",
+	"build_system_choices":
+	[
+		[
+			[
+				[
+					"Packages/C++/C++ Single File.sublime-build",
+					""
+				],
+				[
+					"Packages/C++/C++ Single File.sublime-build",
+					"Run"
+				]
+			],
+			[
+				"Packages/C++/C++ Single File.sublime-build",
+				""
+			]
+		],
+		[
+			[
+				[
+					"Packages/Makefile/Make.sublime-build",
+					""
+				],
+				[
+					"Packages/Makefile/Make.sublime-build",
+					"Clean"
+				]
+			],
+			[
+				"Packages/Makefile/Make.sublime-build",
+				""
+			]
+		],
+		[
+			[
+				[
+					"Packages/Makefile/Make.sublime-build",
+					""
+				],
+				[
+					"Packages/Makefile/Make.sublime-build",
+					"Clean"
+				],
+				[
+					"Packages/ShellScript/ShellScript.sublime-build",
+					""
+				]
+			],
+			[
+				"Packages/Makefile/Make.sublime-build",
+				""
+			]
+		]
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"",
+				"View: Toggle Menu"
+			]
+		],
+		"width": 0.0
+	},
+	"console":
+	{
+		"height": 212.0,
+		"history":
+		[
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/home/exucutional/asm/hash/src"
+	],
+	"file_history":
+	[
+		"/home/exucutional/asm/hash/src/hash.sublime-project",
+		"/home/exucutional/asm/hash/Makefile",
+		"/home/exucutional/stm32f0_ARM/labs/03_control_clock/Makefile",
+		"/home/exucutional/stm32f0_ARM/labs/03_control_clock/main.c",
+		"/home/exucutional/asm/hash/hash.c",
+		"/home/exucutional/asm/hash/hash.h",
+		"/home/exucutional/asm/hash/main.c",
+		"/home/exucutional/asm/hash/textproc.c",
+		"/home/exucutional/asm/hash/textproc.h",
+		"/home/exucutional/stm32f0_ARM/labs/03_control_clock/main",
+		"/home/exucutional/asm/c<->asm/main.c",
+		"/home/exucutional/asm/password/password",
+		"/home/exucutional/asm/c<->asm/asm.asm",
+		"/home/exucutional/asm/password/main.c"
+	],
+	"find":
+	{
+		"height": 32.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"key_t",
+			"key_tt"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"key_tt",
+			""
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 2,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "hash.c",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 5182,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2448,
+								2448
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "hash.h",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 801,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "main.c",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 996,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								157,
+								157
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "textproc.c",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 756,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "textproc.h",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 131,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 32.0
+	},
+	"input":
+	{
+		"height": 0.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.exec":
+	{
+		"height": 168.0
+	},
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"pinned_build_system": "",
+	"project": "hash.sublime-project",
+	"replace":
+	{
+		"height": 60.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 750.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"",
+				"~/stm32f0_ARM/labs/03_control_clock/clock.sublime-project"
+			]
+		],
+		"width": 570.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": true,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 225.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
